@@ -9,7 +9,7 @@
     :root{
       --text:#eef2ff;
       --muted:rgba(238,242,255,.78);
-      --card:rgba(8,12,24,.58);
+      --card:rgba(8,12,24,.60);
       --stroke:rgba(255,255,255,.14);
       --yes1:#22c55e;
       --yes2:#16a34a;
@@ -20,15 +20,16 @@
 
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
+
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       color:var(--text);
       overflow:hidden;
 
-      /* ✅ Your uploaded photo as background (same folder as index.html) */
+      /* Background photo */
       background-image:
-        linear-gradient(180deg, rgba(0,0,0,.60), rgba(0,0,0,.60)),
+        linear-gradient(180deg, rgba(0,0,0,.62), rgba(0,0,0,.62)),
         url("./1D99206C-5E5D-4D46-966D-3C1F7F198B49.jpeg");
       background-size: cover;
       background-position: center;
@@ -66,13 +67,24 @@
       min-height:22px;
     }
 
+    /* Area where the No button can run around */
+    .playground{
+      position:relative;
+      width:100%;
+      height:110px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
     .btn-row{
       display:flex;
       gap:12px;
       justify-content:center;
       align-items:center;
       flex-wrap:wrap;
-      padding-top:8px;
+      position:relative;
+      z-index:1;
     }
 
     button{
@@ -84,7 +96,7 @@
       cursor:pointer;
       user-select:none;
       transition:
-        transform .22s cubic-bezier(.2, 1.2, .2, 1),
+        transform .18s ease,
         filter .18s ease,
         box-shadow .18s ease;
       will-change: transform;
@@ -106,23 +118,69 @@
       color:#2a0a0a;
       background: linear-gradient(180deg, var(--no1), var(--no2));
       box-shadow: 0 12px 30px rgba(239,68,68,.24);
-      transform-origin: center;
-    }
-    #noBtn:hover{
-      filter: brightness(1.06);
-      box-shadow: 0 14px 36px rgba(239,68,68,.32);
+      position:absolute; /* runs freely inside playground */
+      left:50%;
+      top:50%;
+      transform: translate(-50%, -50%);
+      touch-action: manipulation;
     }
 
-    .result{
-      margin-top:16px;
-      padding:14px 14px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.22);
+    /* Modal popup */
+    .modal{
+      position:fixed;
+      inset:0;
       display:none;
+      place-items:center;
+      padding:20px;
+      background: rgba(0,0,0,.60);
+      z-index:50;
+    }
+    .modal.show{ display:grid; }
+
+    .modal-card{
+      width:min(520px, 92vw);
+      background: rgba(10,14,28,.78);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:22px;
+      box-shadow: 0 26px 80px rgba(0,0,0,.60);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding:18px 16px 16px;
       text-align:center;
     }
-    .result strong{ color:#ff7ab8; }
+
+    .modal-title{
+      margin:6px 0 10px;
+      font-size:22px;
+      letter-spacing:.2px;
+    }
+
+    .yay-img{
+      width:min(360px, 80vw);
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow: 0 14px 40px rgba(0,0,0,.45);
+      display:block;
+      margin: 10px auto 14px;
+    }
+
+    .modal-actions{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:6px;
+    }
+
+    .closeBtn{
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      border:1px solid rgba(255,255,255,.14);
+      padding:10px 14px;
+      border-radius:999px;
+      font-weight:800;
+    }
+    .closeBtn:hover{ filter: brightness(1.08); }
 
     .hint{
       margin-top:10px;
@@ -131,7 +189,7 @@
       color:rgba(255,255,255,.55);
     }
 
-    /* little floating emoji pop */
+    /* little emoji pop */
     .pop{
       position:absolute;
       left:50%;
@@ -153,31 +211,48 @@
 
 <body>
   <main class="card" id="card">
-    <h1>Aya, will you be my Valentine?</h1>
+    <h1>Aya, will you be my valentine?</h1>
     <p class="subtitle" id="subtitle">Be gentle… choose wisely 😌</p>
 
-    <div class="btn-row">
-      <button id="yesBtn" type="button">Yes</button>
+    <div class="playground" id="playground">
+      <div class="btn-row">
+        <button id="yesBtn" type="button">Yes</button>
+      </div>
       <button id="noBtn" type="button">No</button>
     </div>
 
-    <div class="result" id="result"></div>
-    <div class="hint">Tip: hover the buttons ✨</div>
+    <div class="hint">Tip: try hovering (and chasing) “No” 😈</div>
   </main>
 
+  <!-- Popup / Modal -->
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <div class="modal-title">YAY!! 💘</div>
+
+      <!-- ✅ Put your gif in repo root as yay.gif -->
+      <img class="yay-img" src="./yay.gif" alt="YAY gif" />
+
+      <div style="color: rgba(238,242,255,.80); margin-top:6px;">
+        See you on Valentine’s 😚
+      </div>
+
+      <div class="modal-actions">
+        <button class="closeBtn" id="closeBtn" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const subtitle = document.getElementById("subtitle");
-    const yesBtn = document.getElementById("yesBtn");
-    const noBtn = document.getElementById("noBtn");
-    const result = document.getElementById("result");
-    const card = document.getElementById("card");
+    const subtitle   = document.getElementById("subtitle");
+    const yesBtn     = document.getElementById("yesBtn");
+    const noBtn      = document.getElementById("noBtn");
+    const playground = document.getElementById("playground");
+    const card       = document.getElementById("card");
 
-    // ✅ No shrinks each hover
-    let noScale = 1;
-    const shrinkStep = 0.12;
-    const minScale = 0.35;
+    const modal    = document.getElementById("modal");
+    const closeBtn = document.getElementById("closeBtn");
 
-    // Hover state changes
+    // --- Vibe: hover states ---
     yesBtn.addEventListener("mouseenter", () => {
       subtitle.textContent = "Good choice 😳💚";
       yesBtn.textContent = "YES!!!";
@@ -188,48 +263,100 @@
       yesBtn.textContent = "Yes";
     });
 
-    noBtn.addEventListener("mouseenter", () => {
-      subtitle.textContent = "Hmm… you sure about that? 🤨";
-      noBtn.textContent = "nope";
-      pop("😤");
-
-      // shrink each hover
-      noScale = Math.max(minScale, noScale - shrinkStep);
-      noBtn.style.transform = `scale(${noScale})`;
-
-      // tiny extra vibe as it gets smaller
-      if (noScale <= 0.55) {
-        subtitle.textContent = "It’s getting shy… 😌";
-      }
-      if (noScale <= minScale + 0.01) {
-        subtitle.textContent = "Okay that’s enough 😭";
-      }
-    });
-
-    noBtn.addEventListener("mouseleave", () => {
-      subtitle.textContent = "Be gentle… choose wisely 😌";
-      noBtn.textContent = "No";
-    });
-
-    // Click actions
+    // --- YES click: show popup with gif ---
     yesBtn.addEventListener("click", () => {
-      showResult('Yay! 💘 <strong>See you on Valentine’s</strong> 😚');
       popMany(["💘","💖","💞","💗"]);
+      openModal();
     });
 
-    // If they click "No", it shrinks more
-    noBtn.addEventListener("click", () => {
-      pop("🙅‍♂️");
-      noScale = Math.max(minScale, noScale - shrinkStep * 1.2);
-      noBtn.style.transform = `scale(${noScale})`;
-      subtitle.textContent = "Aaaaand it got smaller 😌";
+    // Close modal
+    closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
     });
 
-    function showResult(html){
-      result.innerHTML = html;
-      result.style.display = "block";
+    function openModal(){
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden","false");
+    }
+    function closeModal(){
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden","true");
     }
 
+    // --- NO runs forever ---
+    // It dodges:
+    // 1) on hover
+    // 2) when cursor comes near (mousemove)
+    // 3) on touchstart (mobile)
+    noBtn.addEventListener("mouseenter", () => {
+      subtitle.textContent = "Nope nope nope 😌";
+      pop("😤");
+      dodge();
+    });
+
+    noBtn.addEventListener("touchstart", (e) => {
+      // prevent accidental click; make it run
+      e.preventDefault();
+      subtitle.textContent = "Nice try 😈";
+      pop("🏃‍♂️");
+      dodge(true);
+    }, { passive:false });
+
+    document.addEventListener("mousemove", (e) => {
+      // If cursor gets close to No, run away
+      const b = noBtn.getBoundingClientRect();
+      const cx = b.left + b.width / 2;
+      const cy = b.top  + b.height/ 2;
+
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const dist = Math.hypot(dx, dy);
+
+      // distance threshold (bigger = harder to catch)
+      if (dist < 120) {
+        dodge();
+      }
+    });
+
+    function dodge(extra=false){
+      const pg = playground.getBoundingClientRect();
+      const b  = noBtn.getBoundingClientRect();
+
+      const padding = 10;
+      const maxX = pg.width  - b.width  - padding;
+      const maxY = pg.height - b.height - padding;
+
+      let x = padding + Math.random() * Math.max(1, maxX - padding);
+      let y = padding + Math.random() * Math.max(1, maxY - padding);
+
+      // extra dodge push (for touch)
+      if (extra) {
+        x = clamp(x + (Math.random() < 0.5 ? -40 : 40), padding, maxX);
+        y = clamp(y + (Math.random() < 0.5 ? -20 : 20), padding, maxY);
+      }
+
+      // set position relative to playground
+      noBtn.style.left = x + "px";
+      noBtn.style.top  = y + "px";
+
+      // tiny animation feedback
+      noBtn.style.transform = "translate(-50%, -50%) scale(1.02)";
+      setTimeout(() => {
+        noBtn.style.transform = "translate(-50%, -50%) scale(1)";
+      }, 120);
+    }
+
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+    // Place No button initially inside playground
+    // (keeps it fully visible)
+    window.addEventListener("load", () => {
+      // move it once so it isn't exactly center
+      dodge();
+    });
+
+    // little emoji pop
     function pop(emoji){
       const el = document.createElement("div");
       el.className = "pop";
