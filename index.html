@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aya 💘</title>
+
+  <style>
+    :root{
+      --text:#eef2ff;
+      --muted:rgba(238,242,255,.78);
+      --card:rgba(8,12,24,.58);
+      --stroke:rgba(255,255,255,.14);
+      --yes1:#22c55e;
+      --yes2:#16a34a;
+      --no1:#ef4444;
+      --no2:#b91c1c;
+      --shadow: 0 22px 70px rgba(0,0,0,.55);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      overflow:hidden;
+
+      /* ✅ Your uploaded photo as background (same folder as index.html) */
+      background-image:
+        linear-gradient(180deg, rgba(0,0,0,.60), rgba(0,0,0,.60)),
+        url("./1D99206C-5E5D-4D46-966D-3C1F7F198B49.jpeg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+
+      display:grid;
+      place-items:center;
+      padding:24px;
+    }
+
+    .card{
+      width:min(560px, 92vw);
+      padding:30px 22px;
+      border-radius:26px;
+      background: var(--card);
+      border:1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position:relative;
+    }
+
+    h1{
+      margin:0 0 10px;
+      text-align:center;
+      font-size:clamp(22px, 4vw, 34px);
+      line-height:1.15;
+      letter-spacing:.2px;
+    }
+
+    .subtitle{
+      margin:0 0 18px;
+      text-align:center;
+      color:var(--muted);
+      min-height:22px;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      align-items:center;
+      flex-wrap:wrap;
+      padding-top:8px;
+    }
+
+    button{
+      border:0;
+      padding:12px 18px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:16px;
+      cursor:pointer;
+      user-select:none;
+      transition:
+        transform .22s cubic-bezier(.2, 1.2, .2, 1),
+        filter .18s ease,
+        box-shadow .18s ease;
+      will-change: transform;
+    }
+    button:active{ transform: scale(.98); }
+
+    #yesBtn{
+      color:#052012;
+      background: linear-gradient(180deg, var(--yes1), var(--yes2));
+      box-shadow: 0 12px 30px rgba(34,197,94,.28);
+    }
+    #yesBtn:hover{
+      transform: translateY(-1px) scale(1.03);
+      filter: brightness(1.05);
+      box-shadow: 0 14px 36px rgba(34,197,94,.35);
+    }
+
+    #noBtn{
+      color:#2a0a0a;
+      background: linear-gradient(180deg, var(--no1), var(--no2));
+      box-shadow: 0 12px 30px rgba(239,68,68,.24);
+      transform-origin: center;
+    }
+    #noBtn:hover{
+      filter: brightness(1.06);
+      box-shadow: 0 14px 36px rgba(239,68,68,.32);
+    }
+
+    .result{
+      margin-top:16px;
+      padding:14px 14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      display:none;
+      text-align:center;
+    }
+    .result strong{ color:#ff7ab8; }
+
+    .hint{
+      margin-top:10px;
+      text-align:center;
+      font-size:13px;
+      color:rgba(255,255,255,.55);
+    }
+
+    /* little floating emoji pop */
+    .pop{
+      position:absolute;
+      left:50%;
+      top:10px;
+      transform:translateX(-50%);
+      font-size:28px;
+      opacity:0;
+      pointer-events:none;
+      animation: pop 900ms ease forwards;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+    }
+    @keyframes pop{
+      0%{ transform:translateX(-50%) translateY(10px) scale(.6); opacity:0; }
+      30%{ opacity:1; }
+      100%{ transform:translateX(-50%) translateY(-18px) scale(1.1); opacity:0; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card" id="card">
+    <h1>Aya, will you be my valentine?</h1>
+    <p class="subtitle" id="subtitle">Be gentle… choose wisely 😌</p>
+
+    <div class="btn-row">
+      <button id="yesBtn" type="button">Yes</button>
+      <button id="noBtn" type="button">No</button>
+    </div>
+
+    <div class="result" id="result"></div>
+    <div class="hint">Tip: hover the buttons ✨</div>
+  </main>
+
+  <script>
+    const subtitle = document.getElementById("subtitle");
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const result = document.getElementById("result");
+    const card = document.getElementById("card");
+
+    // ✅ No shrinks each hover
+    let noScale = 1;
+    const shrinkStep = 0.12;
+    const minScale = 0.35;
+
+    // Hover state changes
+    yesBtn.addEventListener("mouseenter", () => {
+      subtitle.textContent = "Good choice 😳💚";
+      yesBtn.textContent = "YES!!!";
+      pop("💚");
+    });
+    yesBtn.addEventListener("mouseleave", () => {
+      subtitle.textContent = "Be gentle… choose wisely 😌";
+      yesBtn.textContent = "Yes";
+    });
+
+    noBtn.addEventListener("mouseenter", () => {
+      subtitle.textContent = "Hmm… you sure about that? 🤨";
+      noBtn.textContent = "nope";
+      pop("😤");
+
+      // shrink each hover
+      noScale = Math.max(minScale, noScale - shrinkStep);
+      noBtn.style.transform = `scale(${noScale})`;
+
+      // tiny extra vibe as it gets smaller
+      if (noScale <= 0.55) {
+        subtitle.textContent = "It’s getting shy… 😌";
+      }
+      if (noScale <= minScale + 0.01) {
+        subtitle.textContent = "Okay that’s enough 😭";
+      }
+    });
+
+    noBtn.addEventListener("mouseleave", () => {
+      subtitle.textContent = "Be gentle… choose wisely 😌";
+      noBtn.textContent = "No";
+    });
+
+    // Click actions
+    yesBtn.addEventListener("click", () => {
+      showResult('Yay! 💘 <strong>See you on Valentine’s</strong> 😚');
+      popMany(["💘","💖","💞","💗"]);
+    });
+
+    // If they click "No", it shrinks more
+    noBtn.addEventListener("click", () => {
+      pop("🙅‍♂️");
+      noScale = Math.max(minScale, noScale - shrinkStep * 1.2);
+      noBtn.style.transform = `scale(${noScale})`;
+      subtitle.textContent = "Aaaaand it got smaller 😌";
+    });
+
+    function showResult(html){
+      result.innerHTML = html;
+      result.style.display = "block";
+    }
+
+    function pop(emoji){
+      const el = document.createElement("div");
+      el.className = "pop";
+      el.textContent = emoji;
+      card.appendChild(el);
+      el.addEventListener("animationend", () => el.remove());
+    }
+
+    function popMany(emojis){
+      let i = 0;
+      const t = setInterval(() => {
+        pop(emojis[i % emojis.length]);
+        i++;
+        if(i > 10) clearInterval(t);
+      }, 120);
+    }
+  </script>
+</body>
+</html>
