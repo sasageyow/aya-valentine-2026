@@ -27,7 +27,6 @@
       color:var(--text);
       overflow:hidden;
 
-      /* Background photo */
       background-image:
         linear-gradient(180deg, rgba(0,0,0,.62), rgba(0,0,0,.62)),
         url("./1D99206C-5E5D-4D46-966D-3C1F7F198B49.jpeg");
@@ -67,7 +66,6 @@
       min-height:22px;
     }
 
-    /* Area where the No button can run around */
     .playground{
       position:relative;
       width:100%;
@@ -118,7 +116,7 @@
       color:#2a0a0a;
       background: linear-gradient(180deg, var(--no1), var(--no2));
       box-shadow: 0 12px 30px rgba(239,68,68,.24);
-      position:absolute; /* runs freely inside playground */
+      position:absolute;
       left:50%;
       top:50%;
       transform: translate(-50%, -50%);
@@ -155,7 +153,7 @@
       letter-spacing:.2px;
     }
 
-    .yay-img{
+    .modal-img{
       width:min(360px, 80vw);
       border-radius:16px;
       border:1px solid rgba(255,255,255,.14);
@@ -182,14 +180,7 @@
     }
     .closeBtn:hover{ filter: brightness(1.08); }
 
-    .hint{
-      margin-top:10px;
-      text-align:center;
-      font-size:13px;
-      color:rgba(255,255,255,.55);
-    }
-
-    /* little emoji pop */
+    /* emoji pop */
     .pop{
       position:absolute;
       left:50%;
@@ -220,19 +211,17 @@
       </div>
       <button id="noBtn" type="button">No</button>
     </div>
-
-    <div class="hint">Tip: try hovering (and chasing) “No” 😈</div>
   </main>
 
   <!-- Popup / Modal -->
   <div class="modal" id="modal" aria-hidden="true">
     <div class="modal-card" role="dialog" aria-modal="true">
-      <div class="modal-title">YAY!! 💘</div>
+      <div class="modal-title" id="modalTitle">YAY!! 💘</div>
 
-      <!-- ✅ Put your gif in repo root as yay.gif -->
-      <img class="yay-img" src="./yay.gif" alt="YAY gif" />
+      <!-- The image src will be switched by JS -->
+      <img class="modal-img" id="modalImg" src="./yay.gif" alt="popup gif" />
 
-      <div style="color: rgba(238,242,255,.80); margin-top:6px;">
+      <div id="modalText" style="color: rgba(238,242,255,.80); margin-top:6px;">
         See you on Valentine’s 😚
       </div>
 
@@ -249,10 +238,31 @@
     const playground = document.getElementById("playground");
     const card       = document.getElementById("card");
 
-    const modal    = document.getElementById("modal");
-    const closeBtn = document.getElementById("closeBtn");
+    const modal      = document.getElementById("modal");
+    const closeBtn   = document.getElementById("closeBtn");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalImg   = document.getElementById("modalImg");
+    const modalText  = document.getElementById("modalText");
 
-    // --- Vibe: hover states ---
+    // --- Modal helpers ---
+    function openModal({ title, imgSrc, text }) {
+      modalTitle.textContent = title;
+      modalImg.src = imgSrc;
+      modalText.textContent = text;
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden","false");
+    }
+    function closeModal(){
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden","true");
+    }
+
+    closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // --- YES hover + click ---
     yesBtn.addEventListener("mouseenter", () => {
       subtitle.textContent = "Good choice 😳💚";
       yesBtn.textContent = "YES!!!";
@@ -263,32 +273,17 @@
       yesBtn.textContent = "Yes";
     });
 
-    // --- YES click: show popup with gif ---
     yesBtn.addEventListener("click", () => {
       popMany(["💘","💖","💞","💗"]);
-      openModal();
+      openModal({
+        title: "YAY!! 💘",
+        imgSrc: "./yay.gif",
+        text: "See you on Valentine’s 😚"
+      });
+      resetIdleTimer(true); // prevent idle popup immediately after saying yes
     });
-
-    // Close modal
-    closeBtn.addEventListener("click", closeModal);
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) closeModal();
-    });
-
-    function openModal(){
-      modal.classList.add("show");
-      modal.setAttribute("aria-hidden","false");
-    }
-    function closeModal(){
-      modal.classList.remove("show");
-      modal.setAttribute("aria-hidden","true");
-    }
 
     // --- NO runs forever ---
-    // It dodges:
-    // 1) on hover
-    // 2) when cursor comes near (mousemove)
-    // 3) on touchstart (mobile)
     noBtn.addEventListener("mouseenter", () => {
       subtitle.textContent = "Nope nope nope 😌";
       pop("😤");
@@ -296,7 +291,6 @@
     });
 
     noBtn.addEventListener("touchstart", (e) => {
-      // prevent accidental click; make it run
       e.preventDefault();
       subtitle.textContent = "Nice try 😈";
       pop("🏃‍♂️");
@@ -304,19 +298,11 @@
     }, { passive:false });
 
     document.addEventListener("mousemove", (e) => {
-      // If cursor gets close to No, run away
       const b = noBtn.getBoundingClientRect();
       const cx = b.left + b.width / 2;
       const cy = b.top  + b.height/ 2;
-
-      const dx = e.clientX - cx;
-      const dy = e.clientY - cy;
-      const dist = Math.hypot(dx, dy);
-
-      // distance threshold (bigger = harder to catch)
-      if (dist < 120) {
-        dodge();
-      }
+      const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+      if (dist < 120) dodge();
     });
 
     function dodge(extra=false){
@@ -330,17 +316,14 @@
       let x = padding + Math.random() * Math.max(1, maxX - padding);
       let y = padding + Math.random() * Math.max(1, maxY - padding);
 
-      // extra dodge push (for touch)
       if (extra) {
         x = clamp(x + (Math.random() < 0.5 ? -40 : 40), padding, maxX);
         y = clamp(y + (Math.random() < 0.5 ? -20 : 20), padding, maxY);
       }
 
-      // set position relative to playground
       noBtn.style.left = x + "px";
       noBtn.style.top  = y + "px";
 
-      // tiny animation feedback
       noBtn.style.transform = "translate(-50%, -50%) scale(1.02)";
       setTimeout(() => {
         noBtn.style.transform = "translate(-50%, -50%) scale(1)";
@@ -348,15 +331,9 @@
     }
 
     function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+    window.addEventListener("load", () => dodge());
 
-    // Place No button initially inside playground
-    // (keeps it fully visible)
-    window.addEventListener("load", () => {
-      // move it once so it isn't exactly center
-      dodge();
-    });
-
-    // little emoji pop
+    // --- Emoji pop ---
     function pop(emoji){
       const el = document.createElement("div");
       el.className = "pop";
@@ -364,7 +341,6 @@
       card.appendChild(el);
       el.addEventListener("animationend", () => el.remove());
     }
-
     function popMany(emojis){
       let i = 0;
       const t = setInterval(() => {
@@ -373,6 +349,35 @@
         if(i > 10) clearInterval(t);
       }, 120);
     }
+
+    // --- Idle popup after 5 seconds with no action ---
+    let idleTimer = null;
+    let idleShown = false;
+
+    function resetIdleTimer(forceBlock=false){
+      if (forceBlock) idleShown = true; // prevents idle popup after YES
+      clearTimeout(idleTimer);
+      if (idleShown) return; // once shown (or blocked), don't show again
+      idleTimer = setTimeout(() => {
+        // If modal already open (e.g. YES), don't interrupt
+        if (modal.classList.contains("show")) return;
+        idleShown = true;
+        openModal({
+          title: "👀",
+          imgSrc: "./idle.gif",
+          text: ""
+        });
+      }, 5000);
+    }
+
+    // Count these as "action"
+    const activityEvents = ["touchstart","touchmove","scroll","click","mousemove","keydown"];
+    activityEvents.forEach(evt => {
+      window.addEventListener(evt, () => resetIdleTimer(false), { passive:true });
+    });
+
+    // Start timer on load
+    resetIdleTimer(false);
   </script>
 </body>
 </html>
